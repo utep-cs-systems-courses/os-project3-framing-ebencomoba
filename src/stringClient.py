@@ -51,6 +51,7 @@ if s is None:
     sys.exit(1)
 
 outMessage = "Hello world! I send simple strings.".encode()
+s.send(b'0')
 while len(outMessage):
     print("sending '%s'" % outMessage.decode())
     bytesSent = s.send(outMessage)
@@ -60,8 +61,8 @@ s.shutdown(socket.SHUT_WR)      # no more output
 
 while 1:
     data = s.recv(1024).decode()
-    print("Received '%s'" % data)
     if len(data) == 0:
         break
+    print("Received '%s'" % data)
 print("Zero length read.  Closing")
 s.close()

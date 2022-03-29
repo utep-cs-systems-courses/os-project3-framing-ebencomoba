@@ -4,13 +4,12 @@ import os, sys, re
 
 def addTitle(srcName, resFile):
     titleSize = len(srcName.encode())
-    resFile.write(f'TitleSize: {titleSize}\n'.encode())
-    resFile.write(f'Title: {srcName}\n'.encode())
+    resFile.write('{:0>8}'.format(titleSize).encode())
+    resFile.write(f'{srcName}'.encode())
 
 def addContents(srcName, srcFile, resFile):
     contentsSize = os.stat(srcName).st_size
-    resFile.write(f'ContentsSize: {contentsSize}\n'.encode())
-    resFile.write(f'Contents:\n'.encode())
+    resFile.write('{:0>28}'.format(contentsSize).encode())
     resFile.write(os.read(srcFile, contentsSize))
     
 def storeFile(srcName, resFile):
@@ -32,9 +31,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-"""
-Suggested methods:
-writeByteArray(fd, byteArray)
-readByteArray(fd)
-"""

@@ -52,10 +52,10 @@ if s is None:
 messageFile = "output"
 messagefd = os.open(messageFile, os.O_RDONLY)
 s.send(b'1')
-subMessage = os.read(messagefd,10240)
+subMessage = os.read(messagefd,1024)
 while len(subMessage):
     bytesSent = s.send(subMessage)
-    subMessage = subMessage[bytesSent:]
+    subMessage = os.read(messagefd, 1024)
 os.close(messagefd)
 
 while 1:
