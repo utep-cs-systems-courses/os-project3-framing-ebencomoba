@@ -53,7 +53,7 @@ if s is None:
 outMessage = "Hello world! I send simple strings.".encode()
 s.send(b'0')
 while len(outMessage):
-    print("sending '%s'" % outMessage.decode())
+    print("\tSending '%s'" % outMessage.decode())
     bytesSent = s.send(outMessage)
     outMessage = outMessage[bytesSent:]
 

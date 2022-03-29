@@ -28,9 +28,9 @@ s.listen(1)              # allow only one outstanding request
 
 conn, addr = s.accept()  # wait until incoming connection request (and accept it)
 print('\tConnected by', addr)
-conn, addr - s.accept()
 # If the message is a string
-if conn.recv(1) == 0:
+contentType = int(conn.recv(1).decode())
+if contentType == 0:
     sendMsg = ("String received").encode()
     conn.send(sendMsg)
     print("\tMessage received: ")
@@ -48,8 +48,8 @@ else:
     # While we still have files
     while 1:
         titleSize = conn.recv(8).decode()
-        if len(data) == 0:
-            print("\tZero length read.")
+        if len(titleSize) == 0:
+            print("\tEnd of file.")
             break
         fileName = conn.recv(int(titleSize)).decode()
         contentsSize = int(conn.recv(28).decode())
