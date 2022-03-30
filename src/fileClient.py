@@ -58,6 +58,8 @@ while len(subMessage):
     subMessage = os.read(messagefd, 1024)
 os.close(messagefd)
 
+s.shutdown(socket.SHUT_WR)
+
 while 1:
     data = s.recv(1024).decode()
     print("Received: '%s'" % data)
