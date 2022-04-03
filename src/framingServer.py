@@ -6,7 +6,7 @@ import socket, sys, os, re
 sys.path.append("../lib")       # for params
 import params, threading
 
-def stringMessage_handler(conn):
+def stringMessage_handler():
     sendMsg = ("String received").encode()
     conn.send(sendMsg)
     strMessage = ''
@@ -18,7 +18,12 @@ def stringMessage_handler(conn):
             break
     print("\tMessage received: '%s'" % strMessage)
 
-def fileTransfer_handler(conn):
+def validateFile(fileName):
+    while fileName in filesOpen:
+        print("\tFile '%s' is in use. Waiting 10s." % fileName)
+        time.sleep(10)
+    
+def fileTransfer_handler():
     sendMsg = ("Files received").encode()
     conn.send(sendMsg)
     print("\tFiles received.")
@@ -29,6 +34,8 @@ def fileTransfer_handler(conn):
             print("\tEnd of file(s).")
             break
         fileName = conn.recv(int(titleSize)).decode()
+        validateFile(fileName)
+        filesOpen.add(fileName)
         contentsSize = int(conn.recv(28).decode())
         with open(fileName, 'w') as outFile:
             while contentsSize:
@@ -36,16 +43,16 @@ def fileTransfer_handler(conn):
                 data = conn.recv(streamSize).decode()
                 outFile.write(data)
                 contentsSize -= len(data)
+        filesOpen.remove(fileName)
 
-def request_handler(conn):
-    if os.fork() == 0:
-        print('\tConnected by', addr)
-        contentType = int(conn.recv(1).decode())
-        if contentType == 0:
-            stringMessage_handler(conn)
-        else:
-            fileTransfer_handler(conn)
-        conn.shutdown(socket.SHUT_WR)
+def request_handler():
+    print('\tConnected by', addr)
+    contentType = int(conn.recv(1).decode())
+    if contentType == 0:
+        stringMessage_handler()
+    else:
+        fileTransfer_handler()
+    conn.shutdown(socket.SHUT_WR)
 
 # Declaring vars for proxy
 switchesVarDefaults = (
@@ -67,12 +74,9 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind((listenAddr, listenPort))
 s.listen(5)              # allow five outstanding requests
 # s is a factory for connected sockets
+filesOpen = set()
 
 while True:
     conn, addr = s.accept()  # wait until incoming connection request (and accept it)
-    request_handler(conn)
-    thread = threading.Thread(target=request_handler, args=(conn,))
+    thread = threading.Thread(target=request_handler, args=())
     thread.start()
-    
-#conn.shutdown(socket.SHUT_WR)
-#conn.close()
