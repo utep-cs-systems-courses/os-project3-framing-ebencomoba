@@ -2,11 +2,11 @@
 
 # File transfer server program
 
-import socket, sys, os, re
+import socket, sys, os, re, time
 sys.path.append("../lib")       # for params
 import params, threading
 
-def stringMessage_handler():
+def stringMessage_handler(conn):
     sendMsg = ("String received").encode()
     conn.send(sendMsg)
     strMessage = ''
@@ -23,7 +23,7 @@ def validateFile(fileName):
         print("\tFile '%s' is in use. Waiting 10s." % fileName)
         time.sleep(10)
     
-def fileTransfer_handler():
+def fileTransfer_handler(conn):
     sendMsg = ("Files received").encode()
     conn.send(sendMsg)
     print("\tFiles received.")
@@ -45,13 +45,14 @@ def fileTransfer_handler():
                 contentsSize -= len(data)
         filesOpen.remove(fileName)
 
-def request_handler():
+def request_handler(conn, addr):
+    # conn, addr = s.accept()
     print('\tConnected by', addr)
     contentType = int(conn.recv(1).decode())
     if contentType == 0:
-        stringMessage_handler()
+        stringMessage_handler(conn)
     else:
-        fileTransfer_handler()
+        fileTransfer_handler(conn)
     conn.shutdown(socket.SHUT_WR)
 
 # Declaring vars for proxy
@@ -76,7 +77,9 @@ s.listen(5)              # allow five outstanding requests
 # s is a factory for connected sockets
 filesOpen = set()
 
-while True:
+count = 0
+while count < 5:
     conn, addr = s.accept()  # wait until incoming connection request (and accept it)
-    thread = threading.Thread(target=request_handler, args=())
+    thread = threading.Thread(target=request_handler, args=(conn,addr,))
     thread.start()
+    count += 1
